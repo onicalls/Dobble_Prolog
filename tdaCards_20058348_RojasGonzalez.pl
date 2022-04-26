@@ -6,16 +6,11 @@
 %predicates
 %tdaCards(CardList).
 
-joinRecursivo(_, [], Lista, Lista).
-joinRecursivo([Cabeza|Cola], Cola, Lista, F):-
-    join(Cabeza, Lista, NuevaLista),
-    joinRecursivo([Cola|OtraCosa], OtraCosa, NuevaLista, F),!.
-
 % 3. Unir dos listas (join)
 %	join(L1, L2, L3) es verdadero si L3 es el resultado de unir L1 y L2.
-join( [], Lista, Lista ).
-join( [CabezaL1|RestoL1], Lista2, [CabezaL1|ListaResultado] ) :-
-	join( RestoL1, Lista2, ListaResultado ).
+join([], Lista, Lista).
+join([CabezaL1|RestoL1], Lista2, [CabezaL1|ListaResultado]) :-
+	join(RestoL1, Lista2, ListaResultado).
 
 % 7. Insertar un elemento al principio de la lista (insertar por cabeza)
 %Ejemplo: insertarAlFinal(a,[],Lista).
@@ -32,6 +27,13 @@ primerElementoDeUnaLista([Elemento|_], Elemento).
 % Caso base: entregar el resto de una lista.
 restoDeUnaLista([_|Resto], Resto).
 
+%Elimina un elemento en una determinada posición.
+borrarAt(0, [_], []).
+borrarAt(0, [_|Resto], Resto).
+borrarAt(Posicion, [Cabeza|Resto], [Cabeza|NuevoResto]):- 
+	PosicionAnterior is Posicion-1,
+	borrarAt(PosicionAnterior, Resto, NuevoResto).
+
 %Ejemplo: obtenerElementoEnPosicion([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z],3, Elemento).
 %Caso base: entregar el elemento cuando la posición llegue a 0.
 obtenerElementoEnPosicion(Elements, 0, Elemento):-
@@ -41,15 +43,24 @@ obtenerElementoEnPosicion(Elements, Posicion, Elemento):-
     restoDeUnaLista(Elements,Resto),
     obtenerElementoEnPosicion(Resto, NuevaPos, Elemento).
 
-%Ejemplo: for1([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3, Card).
+%Ejemplo:
+%Caso Base:
+limitadorDeCartas(_,_,0,F,F).
+limitadorDeCartas(Cards,MaxC,Cont,CardsAcum,F):-
+    primerElementoDeUnaLista(Cards,Card),
+    restoDeUnaLista(Cards,CardsResto),
+    insertarAlFinal(Card,CardsAcum,NewCardsAcum),
+    Cont2 is Cont-1,
+    limitadorDeCartas(CardsResto,MaxC,Cont2,NewCardsAcum,F),!.
+
+%Ejemplo: for1([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3, [], Card).
 %Elements = [a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]
-for1(_, 0, NewCard, NewCard).
+for1(_, -1, NewCard, [NewCard]).
 for1(Elements, NumE, Card, F):-
-    NumE >= 0, 
-    restoDeUnaLista(Elements,Resto),
-    NumE2 is NumE-1,
     primerElementoDeUnaLista(Elements,PrimerElemento),
     insertarAlFinal(PrimerElemento,Card,NewCard),
+    restoDeUnaLista(Elements,Resto),
+    NumE2 is NumE-1,
     for1(Resto, NumE2, NewCard, F).
 
 %Ejemplo: for21([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3, 3, 1, 1, [1], F).
@@ -71,7 +82,7 @@ for2(Elements, NumE, Cont, J, Cards, F):-
     insertarAlFinal(CardFor, Cards, NewCards),
     NewJ is J+1,
     NewCont is Cont-1,
-    for2(Elements, NumE, NewCont, NewJ, NewCards, F).
+    for2(Elements, NumE, NewCont, NewJ, NewCards, F),!.
     
 %Ejemplo: for32([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3, 3, 1, 1, 1, [2], F).
 %Elements = [a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]
@@ -105,8 +116,25 @@ for3(Elements, NumE, Cont, I, Cards, Cards2, F):-
     NewCont is Cont-1,
     for3(Elements, NumE, NewCont, NewI, [], NewCards, F),!.
 
-%cardsSet([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3,_,_,CS).
-cardsSet(Elements,NumE,_,_,CS):-
-    for3(Elements,NumE,NumE,1,[],[],[Cabeza,Cola]),
-    joinRecursivo([Cabeza|Cola],Cola,[],CS).
+randomList(_,[],F,F).
+randomList(Seed,Lista,ListaNueva,F):-
+    length(Lista,Largo),
+    random(0,Seed,Seed2),
+    Seed3 is Seed2 mod Largo,
+    obtenerElementoEnPosicion(Lista,Seed3,Card),
+    borrarAt(Seed3,Lista,NuevaLista),
+    append([Card],ListaNueva,ListaNuevaCarta),
+    randomList(Seed,NuevaLista,ListaNuevaCarta,F),!.
+
+%cardsSet([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3, MaxC,Seed,CS).
+%cardsSet([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3,5,1239,CS).
+cardsSet(Elements,NumE,MaxC,Seed,CS):-
+    for1(Elements,NumE,[],Cards1),
+    for2(Elements,NumE,NumE,1,[],Cards2),
+    for3(Elements,NumE,NumE,1,[],[],Cards3),
+    append(Cards3,CardsAppend3),
+    join(Cards1,Cards2,CardsJoined1),
+    join(CardsJoined1,CardsAppend3,F),
+    limitadorDeCartas(F,MaxC,MaxC,[],F2),
+    randomList(Seed,F2,[],CS),!.
     

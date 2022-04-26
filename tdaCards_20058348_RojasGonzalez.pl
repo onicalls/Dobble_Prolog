@@ -21,10 +21,12 @@ insertarAlFinal(Elemento, [Cabeza|Resto], [Cabeza|Lista]):-
 
 %Ejemplo: primerElementoDeUnaLista([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z],Elemento).
 % Caso base: entregar el primer valor de una lista.
+primerElementoDeUnaLista([], []).
 primerElementoDeUnaLista([Elemento|_], Elemento).
 
 %Ejemplo: restoDeUnaLista([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z],Resto).
 % Caso base: entregar el resto de una lista.
+restoDeUnaLista([], []).
 restoDeUnaLista([_|Resto], Resto).
 
 %Elimina un elemento en una determinada posición.
@@ -78,7 +80,8 @@ for21(Elements, NumE, Cont, J, K, Card, F):-
 %Elements = [a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]
 for2(_,_,0,_,Cards,Cards).
 for2(Elements, NumE, Cont, J, Cards, F):-
-    for21(Elements, NumE, NumE, J, 1, [1], CardFor),
+    primerElementoDeUnaLista(Elements,Primer),
+    for21(Elements, NumE, NumE, J, 1, [Primer], CardFor),
     insertarAlFinal(CardFor, Cards, NewCards),
     NewJ is J+1,
     NewCont is Cont-1,
@@ -126,8 +129,46 @@ randomList(Seed,Lista,ListaNueva,F):-
     append([Card],ListaNueva,ListaNuevaCarta),
     randomList(Seed,NuevaLista,ListaNuevaCarta,F),!.
 
+verificarMaxC(_,NumCartas,NumCartas).
+verificarMaxC(MaxC,NumCartas,MaxC):-
+    MaxC > 0,
+    MaxC < NumCartas,
+    verificarMaxC(_,MaxC,MaxC),!.
+
+%Permite saber si existe un elemento en la lista
+%Ej: pertenece(a,[a,b,c],A).
+pertenece(_,[],0).
+pertenece(Elemento, [Elemento|_],1).
+pertenece(Elemento, [_|Resto], Cont):-
+	pertenece(Elemento, Resto, Cont),!.
+
+%Ejemplo: validador([1,2,3],[1,4,5],0).
+%Ejemplo: trace, (validador([1,2,3],[1,2,5],0,A)).
+validador([],_,Cont,Cont).
+validador(C1,C2,I,Cont):-
+    primerElementoDeUnaLista(C1,E1),
+	pertenece(E1, C2, Sum),
+    Cont2 is I+Sum,
+	restoDeUnaLista(C1,C11),
+	validador(C11,C2,Cont2,Cont),!.
+
+validador2(A):-
+    A<2,
+    A>0.
+
+compararCartas([]).
+compararCartas(CS):-
+    primerElementoDeUnaLista(CS,Card1),
+    restoDeUnaLista(CS,Resto),
+    primerElementoDeUnaLista(Resto,Card2),
+	validador(Card1,Card2,A),
+    validador2(A),
+    restoDeUnaLista(CS,Cards),
+    compararCartas(Cards),!.
+
 %cardsSet([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3, MaxC,Seed,CS).
 %cardsSet([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3,5,1239,CS).
+%cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3,5,1239,CS).
 cardsSet(Elements,NumE,MaxC,Seed,CS):-
     for1(Elements,NumE,[],Cards1),
     for2(Elements,NumE,NumE,1,[],Cards2),
@@ -135,6 +176,8 @@ cardsSet(Elements,NumE,MaxC,Seed,CS):-
     append(Cards3,CardsAppend3),
     join(Cards1,Cards2,CardsJoined1),
     join(CardsJoined1,CardsAppend3,F),
+    length(F,NumCartas),
+    verificarMaxC(MaxC,NumCartas,MaxC),
     limitadorDeCartas(F,MaxC,MaxC,[],F2),
     randomList(Seed,F2,[],CS),!.
     

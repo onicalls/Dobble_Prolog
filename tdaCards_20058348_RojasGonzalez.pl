@@ -1,35 +1,82 @@
 %TDA Cards
 
-% Dominios
-% CardList: List
-%
-%predicates
-%tdaCards(CardList).
+%Elements = Elementos que tendrán las cartas. (list)
+%Cards = Mazo de Cartas generado. (list)
+%ListEC = Lista que contiene los elementos y cartas. (list)
+%tdaCards(Elements,Cards,ListEC).
+tdaCards(Elements,Cards,[Elements,Cards]).
 
-% 3. Unir dos listas (join)
-%	join(L1, L2, L3) es verdadero si L3 es el resultado de unir L1 y L2.
+
+%Funciones Generales:
+%
+%Función que retorna el largo de una lista.
+%Lista = Lista de elementos. (list)
+%Largo = Largo de la lista. (int)
+%Dominio = Lista.
+%Recorrido = Largo.
+%largoLista(Lista,Largo).
+%Ejemplo: largoLista([1,2,3,4,5],X).
+largoLista([],X):- X is 0.
+largoLista(L,X):-
+    cdr(L,R),
+    largoLista(R,Z),
+    X is Z+1,!.
+
+%Función que une dos listas.
+%L1 = Lista 1. (list)
+%L2 = Lista 2. (list)
+%L3 = Lista unida (list)
+%Dominio = L1 x L2.
+%Recorrido = L3.
+%join(L1,L2,L3).
+%Ejemplo: join([1],[2],L).
+%Caso Base: L1 está vacío
 join([], Lista, Lista).
 join([CabezaL1|RestoL1], Lista2, [CabezaL1|ListaResultado]) :-
 	join(RestoL1, Lista2, ListaResultado).
 
-% 7. Insertar un elemento al principio de la lista (insertar por cabeza)
+%Función que añade un elemento al principio de una lista.
+%X = Elemento a insertar. (Cualquier tipo de dato)
+%L = Lista a la que se inserta X. (list)
+%F = Lista con X insertado. (list)
+%Dominio = X x L.
+%Recorrido = L3.
+%insertarAlFinal(X,L,F).
 %Ejemplo: insertarAlFinal(a,[],Lista).
-% Caso base: insertar un elemento a una lista vacia
+% Caso base: insertar un elemento a una lista vacia.
 insertarAlFinal(Elemento, [], [Elemento]).
 insertarAlFinal(Elemento, [Cabeza|Resto], [Cabeza|Lista]):-
         insertarAlFinal(Elemento, Resto, Lista).
 
-%Ejemplo: primerElementoDeUnaLista([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z],Elemento).
+%Función que retorna el primer elemento de una lista.
+%L = Lista. (list)
+%E = Elemento de la lista. (Cualquier tipo de dato)
+%Dominio = L.
+%Recorrido = E.
+%car(L,E).
+%Ejemplo: car([a,b],E).
 % Caso base: entregar el primer valor de una lista.
-primerElementoDeUnaLista([], []).
-primerElementoDeUnaLista([Elemento|_], Elemento).
+car([], []).
+car([E|_], E).
 
-%Ejemplo: restoDeUnaLista([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z],Resto).
+%Función que retorna el resto de una lista.
+%L = Lista base. (list)
+%R= Resto de la lista. (list)
+%Dominio = L.
+%Recorrido = R.
+%cdr(L,R).
+%Ejemplo: cdr([a,b,c],R).
 % Caso base: entregar el resto de una lista.
-restoDeUnaLista([], []).
-restoDeUnaLista([_|Resto], Resto).
+cdr([], []).
+cdr([_|R], R).
 
 %Elimina un elemento en una determinada posición.
+%P = Posición a borrar. (int)
+%L = Lista inicial (list)
+%F = Lista con la posición eliminado. (list)
+%Dominio = P x L.
+%Recorrido = F.
+%borrarAt(P,L,F).
 borrarAt(0, [_], []).
 borrarAt(0, [_|Resto], Resto).
 borrarAt(Posicion, [Cabeza|Resto], [Cabeza|NuevoResto]):- 
@@ -39,18 +86,18 @@ borrarAt(Posicion, [Cabeza|Resto], [Cabeza|NuevoResto]):-
 %Ejemplo: obtenerElementoEnPosicion([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z],3, Elemento).
 %Caso base: entregar el elemento cuando la posición llegue a 0.
 obtenerElementoEnPosicion(Elements, 0, Elemento):-
-    primerElementoDeUnaLista(Elements,Elemento).
+    car(Elements,Elemento).
 obtenerElementoEnPosicion(Elements, Posicion, Elemento):-
     NuevaPos is Posicion-1,
-    restoDeUnaLista(Elements,Resto),
+    cdr(Elements,Resto),
     obtenerElementoEnPosicion(Resto, NuevaPos, Elemento).
 
 %Ejemplo:
 %Caso Base:
 limitadorDeCartas(_,_,0,F,F).
 limitadorDeCartas(Cards,MaxC,Cont,CardsAcum,F):-
-    primerElementoDeUnaLista(Cards,Card),
-    restoDeUnaLista(Cards,CardsResto),
+    car(Cards,Card),
+    cdr(Cards,CardsResto),
     insertarAlFinal(Card,CardsAcum,NewCardsAcum),
     Cont2 is Cont-1,
     limitadorDeCartas(CardsResto,MaxC,Cont2,NewCardsAcum,F),!.
@@ -59,9 +106,9 @@ limitadorDeCartas(Cards,MaxC,Cont,CardsAcum,F):-
 %Elements = [a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]
 for1(_, -1, NewCard, [NewCard]).
 for1(Elements, NumE, Card, F):-
-    primerElementoDeUnaLista(Elements,PrimerElemento),
+    car(Elements,PrimerElemento),
     insertarAlFinal(PrimerElemento,Card,NewCard),
-    restoDeUnaLista(Elements,Resto),
+    cdr(Elements,Resto),
     NumE2 is NumE-1,
     for1(Resto, NumE2, NewCard, F).
 
@@ -80,7 +127,7 @@ for21(Elements, NumE, Cont, J, K, Card, F):-
 %Elements = [a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]
 for2(_,_,0,_,Cards,Cards).
 for2(Elements, NumE, Cont, J, Cards, F):-
-    primerElementoDeUnaLista(Elements,Primer),
+    car(Elements,Primer),
     for21(Elements, NumE, NumE, J, 1, [Primer], CardFor),
     insertarAlFinal(CardFor, Cards, NewCards),
     NewJ is J+1,
@@ -119,16 +166,6 @@ for3(Elements, NumE, Cont, I, Cards, Cards2, F):-
     NewCont is Cont-1,
     for3(Elements, NumE, NewCont, NewI, [], NewCards, F),!.
 
-randomList(_,[],F,F).
-randomList(Seed,Lista,ListaNueva,F):-
-    length(Lista,Largo),
-    random(0,Seed,Seed2),
-    Seed3 is Seed2 mod Largo,
-    obtenerElementoEnPosicion(Lista,Seed3,Card),
-    borrarAt(Seed3,Lista,NuevaLista),
-    append([Card],ListaNueva,ListaNuevaCarta),
-    randomList(Seed,NuevaLista,ListaNuevaCarta,F),!.
-
 verificarMaxC(_,NumCartas,NumCartas).
 verificarMaxC(MaxC,NumCartas,MaxC):-
     MaxC > 0,
@@ -147,12 +184,31 @@ pertenece(Elemento, [_|Resto], Cont):-
 validador(_,[],0,1).
 validador([],_,Cont,Cont).
 validador(C1,C2,I,Cont):-
-    primerElementoDeUnaLista(C1,E1),
+    car(C1,E1),
 	pertenece(E1, C2, Sum),
     Cont2 is I+Sum,
-	restoDeUnaLista(C1,C11),
+	cdr(C1,C11),
 	validador(C11,C2,Cont2,Cont),!.
 
+%Función random que entrega un número al azar.
+%Ejemplo: myRandom(12,Xn).
+myRandom(Xn, Xn1):-
+    AX is 1103515245 * Xn,
+	AXC is AX + 12345,
+	Xn1 is (AXC mod 2147483647).
+
+randomList(_,[],F,F).
+randomList(Seed,Lista,ListaNueva,F):-
+    largoLista(Lista,Largo),
+    myRandom(Seed,Seed2),
+    Seed3 is Seed2 mod Largo,
+    obtenerElementoEnPosicion(Lista,Seed3,Card),
+    borrarAt(Seed3,Lista,NuevaLista),
+    append([Card],ListaNueva,ListaNuevaCarta),
+    randomList(Seed,NuevaLista,ListaNuevaCarta,F),!.
+
+getElements([Elements,_],Elements).
+getCards([_,Cards],Cards).
 
 %cardsSet([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3, MaxC,Seed,CS).
 %cardsSet([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3,5,1239,CS).
@@ -164,29 +220,124 @@ cardsSet(Elements,NumE,MaxC,Seed,CS):-
     append(Cards3,CardsAppend3),
     join(Cards1,Cards2,CardsJoined1),
     join(CardsJoined1,CardsAppend3,F),
-    length(F,NumCartas),
+    largoLista(F,NumCartas),
     verificarMaxC(MaxC,NumCartas,MaxC),
     limitadorDeCartas(F,MaxC,MaxC,[],F2),
-    randomList(Seed,F2,[],CS),!.
+    randomList(Seed,F2,[],CR),
+    tdaCards(Elements,CR,CS),!.
 
-%Ejemplo: cardsSetIsDobble([[1,2,3],[1,4,5], [1,6,7]]).
-cardsSetIsDobble([]).
-cardsSetIsDobble(CS):-
-    primerElementoDeUnaLista(CS,Card1),
-    restoDeUnaLista(CS,Resto),
-    primerElementoDeUnaLista(Resto,Card2),
+%Función que verifica si un mazo de un conjunto válido para Dobble.
+verificarDobble([]).
+verificarDobble(CS):-
+    car(CS,Card1),
+    cdr(CS,Resto),
+    car(Resto,Card2),
 	validador(Card1,Card2,0,A),
     A<2,
     A>0,
-    restoDeUnaLista(CS,Cards),
-    cardsSetIsDobble(Cards),!.
+    cdr(CS,Cards),
+    verificarDobble(Cards),!.
+
+
+%cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3,5,1239,CS),
+%cardsSetIsDobble(CS).
+cardsSetIsDobble(CS):-
+    getCards(CS,Cards),
+    verificarDobble(Cards).
 
 %cardsSetNthCard(CS,3,CS2).
 cardsSetNthCard(CS,N,CS2):-
-    obtenerElementoEnPosicion(CS,N,CS2),!.
+    getCards(CS,Cards),
+    obtenerElementoEnPosicion(Cards,N,CS2),!.
 
-%cardsSetFindTotalCards(
+%Ejemplo:
+%cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3,3,1239,CS),
+%cardsSetIsDobble(CS),
+%cardsSetNthCard(CS,0,CS2),
+%cardsSetFindTotalCards(CS2,TC).
 cardsSetFindTotalCards(C2,TC):-
-    length(C2,N),
+    largoLista(C2,N),
     N2 is N-1,
     TC is N2*N2 + N2 + 1.
+
+%Ejemplo: borrarElemento(1,[1,2,3,4],R).
+% Caso base: El elemento a eliminar es la cabeza de la lista
+borrarElemento(Elemento, [Elemento|Resto], Resto). 
+borrarElemento(Elemento, [Cabeza|Resto], [Cabeza|Resultado]):-
+	Elemento\=Cabeza, 
+	borrarElemento(Elemento, Resto, Resultado),!.
+
+%Ejemplo: eliminarRepetidos([1,2],[1,2,3,4],R).
+eliminarRepetidos([],F,F).
+eliminarRepetidos([Card1|Cards],L2,F):-
+    borrarElemento(Card1,L2,R),
+    eliminarRepetidos(Cards,R,F),!.
+
+%cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3,3,1239,CS),
+%cardsSetMissingCards(CS,CS2).
+cardsSetMissingCards(CS,CS2):-
+    cardsSetNthCard(CS,0,Card),
+	cardsSetFindTotalCards(Card,TC),
+    getCards(CS, CSi),
+    largoLista(CSi,Ne),
+    getElements(CS,Elements),
+    cardsSet(Elements, Ne, TC, TC, CSF),
+    getCards(CSF, CSf),
+    eliminarRepetidos(CSi,CSf,CS2).
+
+%cartaString([1,2,3,4],A).
+cartaString(Carta,Text):-
+    atomics_to_string(Carta, ', ', CartaSeparada),
+    string_concat("Carta: ", CartaSeparada, TextoBonito),
+    string_concat(TextoBonito,"\n ",Text).
+
+%cartasString([[1,2,3,4],[1,5,6,7]],"",A).
+cartasString([],F,F).
+cartasString([Carta|Resto],Acum,F):-
+    cartaString(Carta,T),
+    string_concat(T,Acum,Acum2),
+    cartasString(Resto,Acum2,F).
+
+%Ejemplo: 
+%cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3,3,1239,CS),
+%cardsSetToString(CS,CS_STR).
+cardsSetToString(CS,CS_STR):-
+    getCards(CS,Cartas),
+    cartasString(Cartas,"",CS_STR).
+	    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    

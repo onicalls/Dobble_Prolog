@@ -416,6 +416,7 @@ tdaGame(NP,CS,M,R,Pl,T,Po,S,[NP,CS,M,R,Pl,T,Po,S]).
 
 %
 getPlayers([_,_,_,_,Pl,_,_,_],Pl).
+getTurno([_,_,_,_,_,T,_,_],T).
 
 %
 agregarJugador(_,GO,1,GO).
@@ -438,7 +439,7 @@ dobbleGame(NumPlayers, CardsSet, Mode, Seed, Game):-
 
 
 
-
+%Predicado que registra un nuevo jugador en la partida.
 %User= Nombre del usuario a ingresar (str)
 %GameIn = TDA Game inicial (tdaGame)
 %GameOut = TDA Game final (tdaGame)
@@ -452,11 +453,37 @@ dobbleGameRegister(User,GameIn,GameOut):-
     getPlayers(GameIn,Players),
     pertenece(User,Players,I),
     agregarJugador(User,GameIn,I,GameOut),!.
+
+%
+%Ta = Turno actual (str)
+%Lp = Lista de jugadores (list)
+%Tf = Turno a entregar (str)
+%Dominio: Ta x Lp x Tf
+%verificarTurno(Ta,Lp,Tf).
+verificarTurno("",[P|_],P).
+verificarTurno(P,_,P).
+
+%Predicado que permite obtener el turno del usuario
+%Game: TDA Game (tdaGame)
+%Username: Usuario al cual le pertenece el turno (str)
+%Dominio: Game x Username
+dobbleGameWhoseTurnIsIt(Game,Username):-
+    getPlayers(Game,PlayerList),
+    getTurno(Game,Turno),
+    verificarTurno(Turno,PlayerList,Username),!.
     
-    
-    
-    
-    
+%
+%
+%Ejemplo:
+%cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3, 3, 92175, CS),
+%dobbleGame(2,CS,"modoX",4222221,G),
+%dobbleGameRegister("user2",G,G2),
+%dobbleGameRegister("user1",G2,G3),
+%dobbleGamePlay(G3,null,G4),
+%dobbleGamePlay(G4,[spotit,"user1",a],G5),
+%dobbleGamePlay(G5,null,G6),
+%dobbleGamePlay(G6,[spotit,"user1",c],G7).
+dobbleGamePlay(
     
     
     

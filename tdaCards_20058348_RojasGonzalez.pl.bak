@@ -401,10 +401,57 @@ cardsSetToString(CS,CS_STR):-
     cartasString(Cartas,"",CS_STR).
 	    
 
-    
-    
-    
-    
+
+%TDA tdaGame
+%NP = Número de jugadores (int)
+%CS = TDA Cards (tdaCards)
+%M = Modo de juego (str)
+%R = Semilla random para funcion pseudoaleatoria (int)
+%Pl = Lista de jugadores (list)
+%T = Turno del jugador (str)
+%Po = Puntuacion de los jugadores (list)
+%S = Estado del juego (str)
+%tdaCards(NP,CS,M,R,Pl,T,Po,S,[NP,CS,M,R,Pl,T,Po,S]
+tdaGame(NP,CS,M,R,Pl,T,Po,S,[NP,CS,M,R,Pl,T,Po,S]).
+
+%
+getPlayers([_,_,_,_,Pl,_,_,_],Pl).
+
+%
+agregarJugador(_,GO,1,GO).
+agregarJugador(User,[NP,CS,M,R,Pl,T,Po,S],0,GO):-
+    insertarAlFinal(User,Pl,Pl2),
+    tdaGame(NP,CS,M,R,Pl2,T,Po,S,GO).
+
+%Predicado que crea el TDA Game con los elementos del juego.
+%NumPlayers = Número de jugadores (int)
+%CardsSet = TDA Cards (tdaCards)
+%Mode = Modo de juego (str)
+%Seed = Semilla random para funcion pseudoaleatoria (int)
+%Game = TDA Game 
+%Dominio: NumPlayers x CardsSet x Mode x Seed x Game
+%cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3,5,1239,CS),
+%dobbleGame(4,CS,"modoX",4222221,G).
+dobbleGame(NumPlayers, CardsSet, Mode, Seed, Game):-
+    getCards(CardsSet,Cards),
+    tdaGame(NumPlayers,Cards,Mode,Seed,[],"",[],"",Game).
+
+
+
+
+%User= Nombre del usuario a ingresar (str)
+%GameIn = TDA Game inicial (tdaGame)
+%GameOut = TDA Game final (tdaGame)
+%Dominio: User x GameIn x GameOut
+%dobbleGameRegister("user1",G,G2).
+dobbleGameRegister(User,GameIn,GameOut):-
+    getPlayers(GameOut,Players),
+    pertenece(User,Players,I),
+    agregarJugador(User,GameOut,I,GameIn),!.
+dobbleGameRegister(User,GameIn,GameOut):-
+    getPlayers(GameIn,Players),
+    pertenece(User,Players,I),
+    agregarJugador(User,GameIn,I,GameOut),!.
     
     
     

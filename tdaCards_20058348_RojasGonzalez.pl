@@ -428,6 +428,10 @@ cardsSetToString(CS,CS_STR):-
 tdaGame(NP,CS,M,R,Pl,T,Po,S,[NP,CS,M,R,Pl,T,Po,S]).
 
 %
+getNumP([NP,_,_,_,_,_,_,_],NP).
+getCS([_,CS,_,_,_,_,_,_],CS).
+getMode([_,_,M,_,_,_,_,_],M).
+getR([_,_,_,R,_,_,_,_],R).
 getPlayers([_,_,_,_,Pl,_,_,_],Pl).
 getTurno([_,_,_,_,_,T,_,_],T).
 getPoints([_,_,_,_,_,_,Po,_],Po).
@@ -523,3 +527,58 @@ dobbleGameScore(Game,Username,Score):-
       getPoints(Game,Points),
       getPosElement(Username,Players,0,Pos),
       obtenerElementoEnPosicion(Points,Pos,Score),!.
+
+
+%cartaString(["Juan","Pato"],A).
+playersString(Players,Text):-
+    atomics_to_string(Players, ', ', JugadoresSeparados),
+    string_concat("Jugador: ", JugadoresSeparados, TextoBonito),
+    string_concat(TextoBonito,"\n ",Text).
+
+%cartaString([0,2,3],A).
+pointsString(Points,Text):-
+    atomics_to_string(Points, ', ', PointsSeparados),
+    string_concat("Puntuación: ", PointsSeparados, TextoBonito),
+    string_concat(TextoBonito,"\n ",Text).
+
+%Predicado que transforma un conjunto de cartas es una cadena de texto para ser vista por display.
+%CS = TDA Cards. (tdaCards)
+%CS_STR = Conjunto de cartas en string. (str)
+%cardsSetToString(CS,CS_STR).
+%Ejemplo: 
+%cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3,3,1239,CS),
+%dobbleGame( 2, CS, “modoX” 4222221, G), dobbleGameRegister( “user1” G, G2), 
+%dobbleGameToString(G2, Str), display(Str).
+dobbleGameToString(G,Str):-
+    getNumP(G,NP),
+	string_concat("Número de jugadores: ", NP, T11),
+	string_concat(T11,"\n ",T12),
+    getCS(G,CS),
+    cartasString(CS,"",T21),
+    getMode(G,M),
+	string_concat("Modo de juego: ", M, T31),
+	string_concat(T31,"\n ",T32),
+    getPlayers(G,Pl),
+	playersString(Pl,T41),
+    getTurno(G,T),
+	string_concat("Turno de: ", T, T51),
+	string_concat(T51,"\n ",T52),
+    getPoints(G,Po),
+	pointsString(Po,T61),
+    getStatus(G,S),
+	string_concat("Estado del juego: ", S, T71),
+	string_concat(T71,"\n ",T72),
+    string_concat(T12,T21,TF1),
+	string_concat(TF1,T32,TF2),
+	string_concat(TF2,T41,TF3),
+	string_concat(TF3,T52,TF4),
+	string_concat(TF4,T61,TF5),
+	string_concat(TF5,T72,Str).
+
+
+
+
+
+
+
+

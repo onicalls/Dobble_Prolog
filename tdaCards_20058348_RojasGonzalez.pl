@@ -541,6 +541,16 @@ agregarPuntaje(Pl,Username,2,Po,PF):-
 %dobbleGamePlay(G5,[pass],G6),
 %dobbleGamePlay(G6,null,G7),
 %dobbleGamePlay(G7,[spotit,"user1",a],G8)).
+
+%trace, (cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3, 3, 92175, CS),
+%dobbleGame(2,CS,"modoX",4222221,G),
+%dobbleGameRegister("user2",G,G2),
+%dobbleGameRegister("user1",G2,G3),
+%dobbleGamePlay(G3,null,G4),
+%dobbleGamePlay(G4,[spotit,"user2",a],G5),
+%dobbleGamePlay(G5,null,G7),
+%dobbleGamePlay(G7,[spotit,"user2",a],G8),
+%dobbleGamePlay(G8,[finish],G9)).
 dobbleGamePlay([NP,CS,M,R,Pl,T,Po,_,_],[finish],Game2):-
     tdaGame(NP,CS,M,R,Pl,T,Po,"Terminado",[],Game2),!.
 dobbleGamePlay([NP,CS,M,R,Pl,T,Po,S,_],[pass],Game2):-
@@ -559,11 +569,11 @@ dobbleGamePlay([NP,CS,M,R,Pl,T,Po,S,Me],[spotit,Username,Element],Game2):-
     S3 is S1+S2,
     agregarPuntaje(Pl,Username,S3,Po,PF),
     tdaGame(NP,CS,M,R,Pl,T,PF,S,Me,Game2),!.
-dobbleGamePlay([NP,CS,M,R,Pl,T,Po,S,Me],null,Game2):-
+dobbleGamePlay([NP,CS,M,R,Pl,T,Po,S,_],null,Game2):-
     randomList(R,CS,[],CR),
     car(CR,C1),
     cdr(CR,[C2|_]),
-    insertarAlFinal(C1,Me,Me1),
+    insertarAlFinal(C1,[],Me1),
     insertarAlFinal(C2,Me1,Me2),
     R2 is R-1 ,
     tdaGame(NP,CS,M,R2,Pl,T,Po,S,Me2,Game2),!.

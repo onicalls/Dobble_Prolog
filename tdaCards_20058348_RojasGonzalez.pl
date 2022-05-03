@@ -107,7 +107,7 @@ obtenerElementoEnPosicion(Elements, Posicion, Elemento):-
     cdr(Elements,Resto),
     obtenerElementoEnPosicion(Resto, NuevaPos, Elemento).
 
-%getPosElement(2,[a,b,c],Elemento).
+%getPosElement(2,[a,b,c],Pos,Pos).
 getPosElement(Element,[Element|_],F,F).
 getPosElement(Element,[_|Cdr],Pos,F):-
     Pos2 is Pos+1,
@@ -274,6 +274,7 @@ myRandom(Xn, Xn1):-
 	AXC is AX + 12345,
 	Xn1 is (AXC mod 2147483647).
 
+%Ejemplo: randomList(12,[1,2,3,4,5,6],[],F).
 randomList(_,[],F,F).
 randomList(Seed,Lista,ListaNueva,F):-
     largoLista(Lista,Largo),
@@ -424,24 +425,46 @@ cardsSetToString(CS,CS_STR):-
 %T = Turno del jugador (str)
 %Po = Puntuacion de los jugadores (list)
 %S = Estado del juego (str)
+%Me = Mesa con las cartas dadas vuelta (list)
 %tdaCards(NP,CS,M,R,Pl,T,Po,S,[NP,CS,M,R,Pl,T,Po,S]
-tdaGame(NP,CS,M,R,Pl,T,Po,S,[NP,CS,M,R,Pl,T,Po,S]).
+tdaGame(NP,CS,M,R,Pl,T,Po,S,Me,[NP,CS,M,R,Pl,T,Po,S,Me]).
 
 %
-getNumP([NP,_,_,_,_,_,_,_],NP).
-getCS([_,CS,_,_,_,_,_,_],CS).
-getMode([_,_,M,_,_,_,_,_],M).
-getR([_,_,_,R,_,_,_,_],R).
-getPlayers([_,_,_,_,Pl,_,_,_],Pl).
-getTurno([_,_,_,_,_,T,_,_],T).
-getPoints([_,_,_,_,_,_,Po,_],Po).
-getStatus([_,_,_,_,_,_,_,S],S).
+getNumP([NP,_,_,_,_,_,_,_,_],NP).
+getCS([_,CS,_,_,_,_,_,_,_],CS).
+getMode([_,_,M,_,_,_,_,_,_],M).
+getR([_,_,_,R,_,_,_,_,_],R).
+getPlayers([_,_,_,_,Pl,_,_,_,_],Pl).
+getTurno([_,_,_,_,_,T,_,_,_],T).
+getPoints([_,_,_,_,_,_,Po,_,_],Po).
+getStatus([_,_,_,_,_,_,_,S,_],S).
+getMesa([_,_,_,_,_,_,_,_,Me],Me).
+
+%cartaString(["Juan","Pato"],A).
+playersString(Players,Text):-
+    atomics_to_string(Players, ', ', JugadoresSeparados),
+    string_concat("Jugador: ", JugadoresSeparados, TextoBonito),
+    string_concat(TextoBonito,"\n ",Text).
+
+%cartaString([0,2,3],A).
+pointsString(Points,Text):-
+    atomics_to_string(Points, ', ', PointsSeparados),
+    string_concat("Puntuación: ", PointsSeparados, TextoBonito),
+    string_concat(TextoBonito,"\n ",Text).
+
+mesaString([],T):-
+    string_concat("No hay cartas", " en la mesa.\n",T),!.
+mesaString(Mesa,Text):-
+    atomics_to_string(Mesa, ', ', MesaSeparados),
+    string_concat("Carta en Mesa: ", MesaSeparados, TextoBonito),
+    string_concat(TextoBonito,"\n ",Text).
+
 
 %
 agregarJugador(_,GO,1,GO).
-agregarJugador(User,[NP,CS,M,R,Pl,T,Po,S],0,GO):-
+agregarJugador(User,[NP,CS,M,R,Pl,T,Po,S,Me],0,GO):-
     insertarAlFinal(User,Pl,Pl2),
-    tdaGame(NP,CS,M,R,Pl2,T,Po,S,GO).
+    tdaGame(NP,CS,M,R,Pl2,T,Po,S,Me,GO).
 
 %Predicado que crea el TDA Game con los elementos del juego.
 %NumPlayers = Número de jugadores (int)
@@ -455,7 +478,7 @@ agregarJugador(User,[NP,CS,M,R,Pl,T,Po,S],0,GO):-
 dobbleGame(NumPlayers, CardsSet, Mode, Seed, Game):-
     getCards(CardsSet,Cards),
     insertarVarios(NumPlayers,0,[],Po),
-    tdaGame(NumPlayers,Cards,Mode,Seed,[],"",Po,"",Game).
+    tdaGame(NumPlayers,Cards,Mode,Seed,[],"",Po,"",[],Game).
 
 %Predicado que registra un nuevo jugador en la partida.
 %User= Nombre del usuario a ingresar (str)
@@ -489,20 +512,61 @@ dobbleGameWhoseTurnIsIt(Game,Username):-
     getPlayers(Game,PlayerList),
     getTurno(Game,Turno),
     verificarTurno(Turno,PlayerList,Username),!.
+
+insertarAt(Elemento, 0, [], [Elemento]).
+insertarAt(Elemento, 0, [Cabeza|Resto], [Elemento, Cabeza|Resto]).
+insertarAt(Elemento, Posicion, [Cabeza|Resto], [Cabeza|NuevoResto]):- 
+	PosicionAnterior is Posicion - 1,
+	insertarAt(Elemento, PosicionAnterior, Resto, NuevoResto).
+
+agregarPuntaje(_,_,0,Po,Po).
+agregarPuntaje(_,_,1,Po,Po).
+agregarPuntaje(Pl,Username,2,Po,PF):-
+    getPosElement(Username,Pl,0,Pos),
+    borrarAt(Pos,Po,Po2),
+    insertarAt(2,Pos,Po2,PF),!.
     
+
 %Predicado que permite realizar una jugada a partir de la acción especificadas en el segundo argumento.
 %Game = TDA Game inicial (tdaGame)
 %Action = Lista de string que determina la acción a realizar en el juego (str list)
 %Game2 = TDa Game final (tdaGame)
 %Ejemplo:
-%cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3, 3, 92175, CS),
+%trace, (cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3, 3, 92175, CS),
 %dobbleGame(2,CS,"modoX",4222221,G),
 %dobbleGameRegister("user2",G,G2),
 %dobbleGameRegister("user1",G2,G3),
 %dobbleGamePlay(G3,null,G4),
-%dobbleGamePlay(G4,[spotit,"user1",a],G5),
-%dobbleGamePlay(G5,null,G6),
-%dobbleGamePlay(G6,[spotit,"user1",c],G7).
+%dobbleGamePlay(G4,[spotit,"user2",a],G5),
+%dobbleGamePlay(G5,[pass],G6),
+%dobbleGamePlay(G6,null,G7),
+%dobbleGamePlay(G7,[spotit,"user1",a],G8)).
+dobbleGamePlay([NP,CS,M,R,Pl,T,Po,_,_],[finish],Game2):-
+    tdaGame(NP,CS,M,R,Pl,T,Po,"Terminado",[],Game2),!.
+dobbleGamePlay([NP,CS,M,R,Pl,T,Po,S,_],[pass],Game2):-
+    verificarTurno(T,Pl,User),
+    getPosElement(User,Pl,0,Pos),
+    Pos2 is Pos+1,
+    Pos3 is Pos2 mod NP,
+    obtenerElementoEnPosicion(Pl,Pos3,T2),
+    tdaGame(NP,CS,M,R,Pl,T2,Po,S,[],Game2),!.
+dobbleGamePlay([NP,CS,M,R,Pl,T,Po,S,Me],[spotit,Username,Element],Game2):-
+    verificarTurno(T,Pl,Username),
+    car(Me,C1),
+    cdr(Me,[C2|_]),
+    pertenece(Element,C1,S1),
+    pertenece(Element,C2,S2),
+    S3 is S1+S2,
+    agregarPuntaje(Pl,Username,S3,Po,PF),
+    tdaGame(NP,CS,M,R,Pl,T,PF,S,Me,Game2),!.
+dobbleGamePlay([NP,CS,M,R,Pl,T,Po,S,Me],null,Game2):-
+    randomList(R,CS,[],CR),
+    car(CR,C1),
+    cdr(CR,[C2|_]),
+    insertarAlFinal(C1,Me,Me1),
+    insertarAlFinal(C2,Me1,Me2),
+    R2 is R-1 ,
+    tdaGame(NP,CS,M,R2,Pl,T,Po,S,Me2,Game2),!.
 
 %Predicado que relaciona un TDA de juego con su estado actual.
 %Game = TDA Game inicial (tdaGame)
@@ -528,27 +592,13 @@ dobbleGameScore(Game,Username,Score):-
       getPosElement(Username,Players,0,Pos),
       obtenerElementoEnPosicion(Points,Pos,Score),!.
 
-
-%cartaString(["Juan","Pato"],A).
-playersString(Players,Text):-
-    atomics_to_string(Players, ', ', JugadoresSeparados),
-    string_concat("Jugador: ", JugadoresSeparados, TextoBonito),
-    string_concat(TextoBonito,"\n ",Text).
-
-%cartaString([0,2,3],A).
-pointsString(Points,Text):-
-    atomics_to_string(Points, ', ', PointsSeparados),
-    string_concat("Puntuación: ", PointsSeparados, TextoBonito),
-    string_concat(TextoBonito,"\n ",Text).
-
 %Predicado que transforma un conjunto de cartas es una cadena de texto para ser vista por display.
 %CS = TDA Cards. (tdaCards)
 %CS_STR = Conjunto de cartas en string. (str)
 %cardsSetToString(CS,CS_STR).
 %Ejemplo: 
 %cardsSet([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z], 3,3,1239,CS),
-%dobbleGame( 2, CS, “modoX” 4222221, G), dobbleGameRegister( “user1” G, G2), 
-%dobbleGameToString(G2, Str), display(Str).
+%dobbleGame( 2, CS, "modoX", 4222221, G), dobbleGameRegister( "user1", G, G2), 
 dobbleGameToString(G,Str):-
     getNumP(G,NP),
 	string_concat("Número de jugadores: ", NP, T11),
@@ -560,7 +610,7 @@ dobbleGameToString(G,Str):-
 	string_concat(T31,"\n ",T32),
     getPlayers(G,Pl),
 	playersString(Pl,T41),
-    getTurno(G,T),
+    dobbleGameWhoseTurnIsIt(G,T),
 	string_concat("Turno de: ", T, T51),
 	string_concat(T51,"\n ",T52),
     getPoints(G,Po),
@@ -568,12 +618,15 @@ dobbleGameToString(G,Str):-
     getStatus(G,S),
 	string_concat("Estado del juego: ", S, T71),
 	string_concat(T71,"\n ",T72),
+    getMesa(G,Me),
+    mesaString(Me,T81),
     string_concat(T12,T21,TF1),
 	string_concat(TF1,T32,TF2),
 	string_concat(TF2,T41,TF3),
 	string_concat(TF3,T52,TF4),
 	string_concat(TF4,T61,TF5),
-	string_concat(TF5,T72,Str).
+	string_concat(TF5,T72,TF6),
+    string_concat(TF6,T81,Str).
 
 
 

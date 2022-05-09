@@ -29,19 +29,19 @@ join([CabezaL1|RestoL1], Lista2, [CabezaL1|ListaResultado]) :-
 %L = Lista a la que se inserta X. (list)
 %F = Lista con X insertado. (list)
 %Dominio = X x L x L3.
-%insertarAlFinal(X,L,F).
-%Ejemplo: insertarAlFinal(a,[],Lista).
+%addFinish(X,L,F).
+%Ejemplo: addFinish(a,[],Lista).
 % Caso base: insertar un elemento a una lista vacia.
-insertarAlFinal(Elemento, [], [Elemento]).
-insertarAlFinal(Elemento, [Cabeza|Resto], [Cabeza|Lista]):-
-        insertarAlFinal(Elemento, Resto, Lista).
+addFinish(Elemento, [], [Elemento]).
+addFinish(Elemento, [Cabeza|Resto], [Cabeza|Lista]):-
+        addFinish(Elemento, Resto, Lista).
 
 
 insertarVarios(0,_,F,F).
 insertarVarios(Ne,D,L,F):-
     Ne>0,
     Ne2 is Ne - 1,
-    insertarAlFinal(D,L,F2),
+    addFinish(D,L,F2),
     insertarVarios(Ne2,D,F2,F),!.
 
 %Función que retorna el primer elemento de una lista.
@@ -82,15 +82,15 @@ borrarAt(Posicion, [Cabeza|Resto], [Cabeza|NuevoResto]):-
 %P = Posición del elemento (int)
 %F = Elemento a retornar. (list)
 %Dominio = L x P x F.
-%obtenerElementoEnPosicion(L,P,F).
-%Ejemplo: obtenerElementoEnPosicion([a,b,c],2, Elemento).
+%getElmPos(L,P,F).
+%Ejemplo: getElmPos([a,b,c],2, Elemento).
 %Caso base: entregar el elemento cuando la posición llegue a 0.
-obtenerElementoEnPosicion(Elements, 0, Elemento):-
+getElmPos(Elements, 0, Elemento):-
     car(Elements,Elemento).
-obtenerElementoEnPosicion(Elements, Posicion, Elemento):-
+getElmPos(Elements, Posicion, Elemento):-
     NuevaPos is Posicion-1,
     cdr(Elements,Resto),
-    obtenerElementoEnPosicion(Resto, NuevaPos, Elemento).
+    getElmPos(Resto, NuevaPos, Elemento).
 
 %getPosElement(2,[a,b,c],Pos,Pos).
 getPosElement(Element,[Element|_],F,F).
@@ -155,7 +155,7 @@ getCards([_,Cards],Cards).
 for1(_, -1, NewCard, [NewCard]).
 for1(Elements, NumE, Card, F):-
     car(Elements,PrimerElemento),
-    insertarAlFinal(PrimerElemento,Card,NewCard),
+    addFinish(PrimerElemento,Card,NewCard),
     cdr(Elements,Resto),
     NumE2 is NumE-1,
     for1(Resto, NumE2, NewCard, F).
@@ -174,8 +174,8 @@ for1(Elements, NumE, Card, F):-
 for21(_,_,0,_,_,Card,Card).
 for21(Elements, NumE, Cont, J, K, Card, F):-
     NumAux is (NumE * J + (K+1)),
-    obtenerElementoEnPosicion(Elements, NumAux-1, Elemento),
-    insertarAlFinal(Elemento, Card, NewCard),
+    getElmPos(Elements, NumAux-1, Elemento),
+    addFinish(Elemento, Card, NewCard),
     NewK is K+1,
     NewCont is Cont-1,
     for21(Elements, NumE, NewCont, J, NewK, NewCard, F).
@@ -194,7 +194,7 @@ for2(_,_,0,_,Cards,Cards).
 for2(Elements, NumE, Cont, J, Cards, F):-
     car(Elements,Primer),
     for21(Elements, NumE, NumE, J, 1, [Primer], CardFor),
-    insertarAlFinal(CardFor, Cards, NewCards),
+    addFinish(CardFor, Cards, NewCards),
     NewJ is J+1,
     NewCont is Cont-1,
     for2(Elements, NumE, NewCont, NewJ, NewCards, F),!.
@@ -214,8 +214,8 @@ for2(Elements, NumE, Cont, J, Cards, F):-
 for32(_,_,0,_,_,_,Cards,Cards).
 for32(Elements, NumE, Cont, I, J, K, Card, F):-
     NumAux is (NumE+2+NumE*(K-1)+(((I-1)*(K-1)+J-1) mod NumE)),
-    obtenerElementoEnPosicion(Elements, NumAux-1, Elemento),
-    insertarAlFinal(Elemento, Card, NewCard),
+    getElmPos(Elements, NumAux-1, Elemento),
+    addFinish(Elemento, Card, NewCard),
     NewK is K+1,
     NewCont is Cont-1,
     for32(Elements, NumE, NewCont, I, J, NewK, NewCard, F).
@@ -233,9 +233,9 @@ for32(Elements, NumE, Cont, I, J, K, Card, F):-
 %Ejemplo: for31([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18], 3, 3, 1, 1, [], F).
 for31(_,_,0,_,_,Cards,Cards).
 for31(Elements, NumE, Cont, I, J, Cards, F):-
-    obtenerElementoEnPosicion(Elements, I, SiguenteElemento),
+    getElmPos(Elements, I, SiguenteElemento),
     for32(Elements, NumE, NumE, I, J, 1, [SiguenteElemento], CardFor),
-    insertarAlFinal(CardFor, Cards, NewCards),
+    addFinish(CardFor, Cards, NewCards),
     NewJ is J+1,
     NewCont is Cont-1,
     for31(Elements, NumE, NewCont, I, NewJ, NewCards, F),!.
@@ -253,7 +253,7 @@ for31(Elements, NumE, Cont, I, J, Cards, F):-
 for3(_,_,0,_,_,Cards,Cards).
 for3(Elements, NumE, Cont, I, Cards, Cards2, F):-
     for31(Elements, NumE, NumE, I, 1, Cards, CardFor),
-    insertarAlFinal(CardFor, Cards2, NewCards),
+    addFinish(CardFor, Cards2, NewCards),
     NewI is I+1,
     NewCont is Cont-1,
     for3(Elements, NumE, NewCont, NewI, [], NewCards, F),!.
@@ -271,7 +271,7 @@ limitadorDeCartas(_,_,0,F,F).
 limitadorDeCartas(Cards,MaxC,Cont,CardsAcum,F):-
     car(Cards,Card),
     cdr(Cards,CardsResto),
-    insertarAlFinal(Card,CardsAcum,NewCardsAcum),
+    addFinish(Card,CardsAcum,NewCardsAcum),
     Cont2 is Cont-1,
     limitadorDeCartas(CardsResto,MaxC,Cont2,NewCardsAcum,F),!.
 
@@ -339,7 +339,7 @@ randomList(Seed,Lista,ListaNueva,F):-
     largoLista(Lista,Largo),
     myRandom(Seed,Seed2),
     Seed3 is Seed2 mod Largo,
-    obtenerElementoEnPosicion(Lista,Seed3,Card),
+    getElmPos(Lista,Seed3,Card),
     borrarAt(Seed3,Lista,NuevaLista),
     append([Card],ListaNueva,ListaNuevaCarta),
     randomList(Seed,NuevaLista,ListaNuevaCarta,F),!.
@@ -451,7 +451,7 @@ mesaString(Mesa,Text):-
 %agregarJugador(User,PL,C,PF).
 agregarJugador(_,GO,1,GO).
 agregarJugador(User,[NP,CS,M,R,Pl,T,Po,S,Me],0,GO):-
-    insertarAlFinal(User,Pl,Pl2),
+    addFinish(User,Pl,Pl2),
     tdaGame(NP,CS,M,R,Pl2,T,Po,S,Me,GO).
 
 %Predicado que verifica un turno
@@ -536,7 +536,7 @@ cardsSetIsDobble(CS):-
 %cardsSet(["Estrella","Corazón","Círculo","Cuadrado","Triángulo","Patata","Comodín","Serotonina"],2,A,1584,CSC1),cardsSetNthCard(CSC1,0,CC).
 cardsSetNthCard(CS,P,CS2):-
     getCards(CS,Cards),
-    obtenerElementoEnPosicion(Cards,P,CS2),!.
+    getElmPos(Cards,P,CS2),!.
 
 %Predicado que con una carta de muestra determina la máxima cantidad de cartas que se pueden generar.
 %C2 = Carta de muestra. (list)
@@ -648,7 +648,7 @@ dobbleGamePlay([NP,CS,M,R,Pl,T,Po,S,_],[pass],Game2):-
     getPosElement(User,Pl,0,Pos),
     Pos2 is Pos+1,
     Pos3 is Pos2 mod NP,
-    obtenerElementoEnPosicion(Pl,Pos3,T2),
+    getElmPos(Pl,Pos3,T2),
     tdaGame(NP,CS,M,R,Pl,T2,Po,S,[],Game2),!.
 dobbleGamePlay([NP,CS,M,R,Pl,T,Po,S,Me],[spotit,Username,Element],Game2):-
     verificarTurno(T,Pl,Username),
@@ -663,8 +663,8 @@ dobbleGamePlay([NP,CS,M,R,Pl,T,Po,S,_],null,Game2):-
     randomList(R,CS,[],CR),
     car(CR,C1),
     cdr(CR,[C2|_]),
-    insertarAlFinal(C1,[],Me1),
-    insertarAlFinal(C2,Me1,Me2),
+    addFinish(C1,[],Me1),
+    addFinish(C2,Me1,Me2),
     R2 is R-1 ,
     tdaGame(NP,CS,M,R2,Pl,T,Po,S,Me2,Game2),!.
 
@@ -690,7 +690,7 @@ dobbleGameScore(Game,Username,Score):-
       getPlayers(Game,Players),
       getPoints(Game,Points),
       getPosElement(Username,Players,0,Pos),
-      obtenerElementoEnPosicion(Points,Pos,Score),!.
+      getElmPos(Points,Pos,Score),!.
 
 %Predicado que transforma un conjunto de cartas es una cadena de texto para ser vista por display.
 %CS = TDA Cards. (tdaCards)

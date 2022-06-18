@@ -1,3 +1,3 @@
-En el comienzo de cada predicado hay 3 ejemplos a probar.
-En caso de querer probar con elementos propios, se debe considerar una lista lo suficientemente larga para el set de cartas.
-En caso de querer jugar, recordar siempre verificar de quién es el turno.
+Instrucciones de uso:
+
+Por agregar :)
